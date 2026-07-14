@@ -1,0 +1,47 @@
+{
+  "session_id": "2695d6dccf56beb5",
+  "has_command": true,
+  "checkpoints": [
+    {
+      "id": "59b30a32c123",
+      "label": "\u914d\u7f6e\u4e00\u4e0b\u8fd9\u4e2a\u6253\u5305\u540e\u7684 server\u6258\u7ba1\u6253\u5305\u540e\u7684\u524d\u7aef\u670d\u52a1",
+      "created_at": 1784023790,
+      "has_command": false,
+      "entries": [
+        {
+          "rel": "server/src/index.js",
+          "kind": "modified",
+          "backup": "59b30a32c123/0.bak"
+        },
+        {
+          "rel": "package.json",
+          "kind": "modified",
+          "backup": "59b30a32c123/1.bak"
+        },
+        {
+          "rel": "README.md",
+          "kind": "modified",
+          "backup": "59b30a32c123/2.bak"
+        }
+      ]
+    },
+    {
+      "id": "f7221003535e",
+      "label": "\u5c06node_modules \u653e\u5230\u4e00\u5757 \u653e\u5230\u6839\u76ee\u5f55\u4e0b",
+      "created_at": 1784024021,
+      "has_command": true,
+      "entries": [
+        {
+          "rel": "package.json",
+          "kind": "modified",
+          "backup": "f7221003535e/0.bak"
+        },
+        {
+          "rel": "README.md",
+          "kind": "modified",
+          "backup": "f7221003535e/1.bak"
+        }
+      ]
+    }
+  ]
+}

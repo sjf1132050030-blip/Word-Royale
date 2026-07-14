@@ -1,0 +1,14 @@
+{
+  "name": "word-royale",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Competitive gamified English learning — first closed loop",
+  "scripts": {
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "build:client": "npm run build --prefix client",
+    "start": "npm run start --prefix server",
+    "start:server": "npm run start --prefix server",
+    "e2e": "node server/scripts/e2e-loop.js"
+  }
+}
