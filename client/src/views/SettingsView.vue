@@ -1,14 +1,25 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import http, { aiPost } from '../api/http'
 import { useUserStore } from '../stores/user'
+import { useCoachStore } from '../stores/coach'
 import { useI18n } from '../i18n'
 import LangSwitch from '../components/LangSwitch.vue'
 
 const router = useRouter()
 const store = useUserStore()
+const coachStore = useCoachStore()
 const { t, locale } = useI18n()
+
+const coachWidget = ref(coachStore.visible)
+watch(coachWidget, (v) => coachStore.setVisible(v))
+watch(
+  () => coachStore.visible,
+  (v) => {
+    if (coachWidget.value !== v) coachWidget.value = v
+  }
+)
 
 const nickname = ref('')
 const aiProvider = ref('gemini')
@@ -121,6 +132,15 @@ async function testAi() {
           </div>
         </label>
       </div>
+    </section>
+
+    <section class="panel block">
+      <h2>🤖 {{ t('coach') }}</h2>
+      <label class="check">
+        <input v-model="coachWidget" type="checkbox" />
+        <span>{{ t('coachShow') }}</span>
+      </label>
+      <p class="muted small">{{ t('coachShowDesc') }}</p>
     </section>
 
     <section class="panel block">

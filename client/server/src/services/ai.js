@@ -429,12 +429,30 @@ async function mnemonicForWord(wordInfo, { provider, lang = 'zh', fallback = tru
   };
 }
 
-async function coachChat(message, { lang = 'zh', provider, fallback = true } = {}) {
+/**
+ * @param {string} message
+ * @param {{ lang?: string, provider?: string, fallback?: boolean, history?: { role: string, content: string }[] }} opts
+ */
+async function coachChat(message, { lang = 'zh', provider, fallback = true, history = [] } = {}) {
   const system =
     lang === 'en'
-      ? 'Friendly English coach. Keep under 100 words. Optional: wrap brief reasoning in <think></think>.'
-      : '中文英语教练，120 字内。可用 <think></think> 写一句简短思考再给答案。';
-  const result = await generateText(message, { provider, fallback, system });
+      ? 'Friendly English coach for multi-turn chat. Keep each reply under 120 words. Remember prior turns. Optional: wrap brief reasoning in <think></think>.'
+      : '你是多轮英语陪练教练。结合对话历史回答，每次回复 120 字内。可用 <think></think> 写一句简短思考再给答案。';
+
+  const safeHistory = Array.isArray(history) ? history.slice(-12) : [];
+  let prompt = message;
+  if (safeHistory.length) {
+    const student = lang === 'en' ? 'Student' : '学员';
+    const coach = lang === 'en' ? 'Coach' : '教练';
+    const lines = safeHistory.map((h) => {
+      const role = h.role === 'assistant' ? coach : student;
+      return `${role}: ${String(h.content || '').slice(0, 800)}`;
+    });
+    const header = lang === 'en' ? 'Conversation so far:' : '对话历史：';
+    prompt = `${header}\n${lines.join('\n')}\n${student}: ${message}\n${coach}:`;
+  }
+
+  const result = await generateText(prompt, { provider, fallback, system });
   if (result.text) {
     const again = splitThinking(result.text, result.thinking || '');
     return {

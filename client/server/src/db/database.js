@@ -94,7 +94,8 @@ function initSchema() {
       nickname TEXT NOT NULL,
       ai_provider TEXT NOT NULL DEFAULT 'gemini',
       ai_fallback INTEGER NOT NULL DEFAULT 1,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      is_admin INTEGER NOT NULL DEFAULT 0
     );
 
     CREATE TABLE IF NOT EXISTS user_stats (
@@ -236,6 +237,11 @@ function initSchema() {
   }
   try {
     db.run(`ALTER TABLE lessons ADD COLUMN wordbook_id INTEGER`);
+  } catch (_) {
+    /* column exists */
+  }
+  try {
+    db.run(`ALTER TABLE users ADD COLUMN is_admin INTEGER NOT NULL DEFAULT 0`);
   } catch (_) {
     /* column exists */
   }

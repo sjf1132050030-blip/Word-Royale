@@ -85,8 +85,8 @@ router.patch('/me/settings', authRequired, (req, res) => {
       ? row.ai_fallback === undefined || row.ai_fallback === null
         ? 1
         : row.ai_fallback
-        ? 1
-        : 0
+          ? 1
+          : 0
       : parsed.data.ai_fallback
         ? 1
         : 0;

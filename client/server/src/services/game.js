@@ -407,7 +407,7 @@ function calcSettlement({ correct, wrong, comboMax, total, royale }) {
 function publicUser(userId) {
   const { get } = getDb();
   const user = get(
-    `SELECT id, email, nickname, created_at, ai_provider, ai_fallback, wordbook_code FROM users WHERE id = ?`,
+    `SELECT id, email, nickname, created_at, ai_provider, ai_fallback, wordbook_code, is_admin FROM users WHERE id = ?`,
     [userId]
   );
   if (!user) {
@@ -422,6 +422,7 @@ function publicUser(userId) {
     email: user.email,
     nickname: user.nickname,
     created_at: user.created_at,
+    is_admin: !!user.is_admin,
     settings: {
       ai_provider: provider,
       ai_fallback: user.ai_fallback === undefined || user.ai_fallback === null ? true : !!user.ai_fallback,

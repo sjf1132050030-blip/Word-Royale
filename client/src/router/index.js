@@ -32,6 +32,12 @@ const routes = [
     component: () => import('../views/SettingsView.vue'),
     meta: { auth: true },
   },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('../views/AdminView.vue'),
+    meta: { auth: true, admin: true },
+  },
 ]
 
 const router = createRouter({
@@ -50,6 +56,7 @@ router.beforeEach(async (to) => {
   }
   if (to.meta.auth && !store.token) return { name: 'login' }
   if (to.meta.guest && store.token) return { name: 'home' }
+  if (to.meta.admin && !store.user?.is_admin) return { name: 'home' }
   return true
 })
 

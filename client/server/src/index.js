@@ -7,13 +7,47 @@ const { seed } = require('./db/seed');
 const authRoutes = require('./routes/auth');
 const learnRoutes = require('./routes/learn');
 const aiRoutes = require('./routes/ai');
+const adminRoutes = require('./routes/admin');
 
 const PORT = process.env.PORT || 3001;
 const CLIENT_DIST = path.resolve(__dirname, '../../dist');
 
+async function ensureBootstrapAdmin() {
+  const bcrypt = require('bcryptjs');
+  const { getDb } = require('./db/database');
+  const { ensureStats } = require('./services/game');
+  const { get, run } = getDb();
+
+  const email = process.env.ADMIN_EMAIL || 'admin@wordroyale.local';
+  const password = process.env.ADMIN_PASSWORD || 'admin123456';
+  const nickname = process.env.ADMIN_NICKNAME || 'Admin';
+
+  const existing = get('SELECT id, is_admin FROM users WHERE email = ?', [email]);
+  if (existing) {
+    if (!existing.is_admin) {
+      run('UPDATE users SET is_admin = 1 WHERE id = ?', [existing.id]);
+      console.log(`Promoted existing user to admin: ${email}`);
+    }
+    return;
+  }
+
+  const anyAdmin = get('SELECT id FROM users WHERE is_admin = 1');
+  if (anyAdmin) return;
+
+  const hash = bcrypt.hashSync(password, 10);
+  run(
+    `INSERT INTO users (email, password_hash, nickname, is_admin) VALUES (?, ?, ?, 1)`,
+    [email, hash, nickname]
+  );
+  const row = get('SELECT id FROM users WHERE email = ?', [email]);
+  if (row) ensureStats(row.id);
+  console.log(`Bootstrap admin created: ${email} / ${password}`);
+}
+
 async function main() {
   await initDb();
   await seed();
+  await ensureBootstrapAdmin();
 
   const app = express();
   app.use(cors({ origin: true, credentials: true }));
@@ -35,6 +69,7 @@ async function main() {
 
   app.use('/api/auth', authRoutes);
   app.use('/api/ai', aiRoutes);
+  app.use('/api/admin', adminRoutes);
   app.use('/api', learnRoutes);
 
   // Serve built frontend (client/dist) and SPA fallback for Vue Router history mode

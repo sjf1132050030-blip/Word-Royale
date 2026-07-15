@@ -1,14 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import http, { aiPost } from '../api/http'
+import http from '../api/http'
 import { useUserStore } from '../stores/user'
 import { useI18n } from '../i18n'
 import LangSwitch from '../components/LangSwitch.vue'
 
 const router = useRouter()
 const store = useUserStore()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 const loading = ref(true)
 const error = ref('')
 const lessons = ref([])
@@ -20,11 +20,6 @@ const wordsSeen = ref(0)
 const wordbooks = ref([])
 const activeBook = ref(null)
 const switchingBook = ref(false)
-
-const coachMsg = ref('')
-const coachReply = ref('')
-const coachLoading = ref(false)
-const coachProvider = ref('')
 
 async function load() {
   loading.value = true
@@ -72,26 +67,6 @@ function logout() {
   router.push('/login')
 }
 
-async function askCoach() {
-  if (!coachMsg.value.trim()) return
-  coachLoading.value = true
-  coachReply.value = ''
-  try {
-    const { data } = await aiPost('/ai/chat', {
-      message: coachMsg.value,
-      lang: locale.value,
-    })
-    coachReply.value = data.thinking
-      ? `【${t('aiThinkLabel')}】${data.thinking}\n\n${data.reply}`
-      : data.reply
-    coachProvider.value = data.provider
-  } catch (e) {
-    coachReply.value = e.message
-  } finally {
-    coachLoading.value = false
-  }
-}
-
 onMounted(load)
 </script>
 
@@ -104,6 +79,11 @@ onMounted(load)
       </div>
       <div class="actions">
         <LangSwitch />
+        <button
+          v-if="store.user?.is_admin"
+          class="btn btn-ghost"
+          @click="router.push('/admin')"
+        >🛠 管理</button>
         <button class="btn btn-ghost" @click="router.push('/settings')">⚙️ {{ t('settings') }}</button>
         <button class="btn btn-ghost" @click="router.push('/leaderboard')">🏆 {{ t('leaderboard') }}</button>
         <button class="btn btn-ghost" @click="logout">{{ t('logout') }}</button>
@@ -220,32 +200,6 @@ onMounted(load)
       </div>
     </section>
 
-    <section class="panel block">
-      <div class="block-head">
-        <h2>{{ t('coach') }}</h2>
-        <span class="tag">
-          {{
-            store.user?.settings?.ai_provider === 'agnes'
-              ? 'Agnes'
-              : store.user?.settings?.ai_provider === 'qwen'
-                ? 'Qwen2.5'
-                : 'Gemini'
-          }}
-          · manual
-        </span>
-      </div>
-      <div class="coach">
-        <p class="muted small-coach">{{ t('aiModelDesc') }}</p>
-        <textarea v-model="coachMsg" class="input area" rows="3" :placeholder="t('coachPh')" />
-        <button class="btn btn-primary" :disabled="coachLoading" @click="askCoach">
-          {{ coachLoading ? t('processing') : t('send') }}
-        </button>
-        <div v-if="coachReply" class="reply">
-          <div class="muted" v-if="coachProvider">provider: {{ coachProvider }}</div>
-          <p>{{ coachReply }}</p>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
@@ -406,10 +360,6 @@ onMounted(load)
 .error {
   color: var(--danger);
 }
-.coach {
-  display: grid;
-  gap: 10px;
-}
 .small-coach {
   margin: 0;
   font-size: 12px;
@@ -445,23 +395,6 @@ onMounted(load)
   .book-grid {
     grid-template-columns: 1fr;
   }
-}
-.area {
-  resize: vertical;
-  min-height: 72px;
-}
-.reply {
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.2);
-  white-space: pre-wrap;
-  line-height: 1.5;
-}
-.reply p {
-  margin: 6px 0 0;
-}
-@media (max-width: 640px) {
   .stats {
     grid-template-columns: repeat(2, 1fr);
   }

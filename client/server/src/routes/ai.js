@@ -95,12 +95,21 @@ router.post('/chat', async (req, res) => {
     message: z.string().min(1).max(1000),
     lang: z.enum(['zh', 'en']).optional(),
     provider: z.enum(['gemini', 'agnes', 'qwen']).optional(),
+    history: z
+      .array(
+        z.object({
+          role: z.enum(['user', 'assistant']),
+          content: z.string().min(1).max(2000),
+        })
+      )
+      .max(20)
+      .optional(),
   });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ error: '参数错误' });
 
   const prefs = userAiPrefs(req.user.id);
-  const { message, lang = 'zh' } = parsed.data;
+  const { message, lang = 'zh', history = [] } = parsed.data;
   const provider = parsed.data.provider || prefs.provider;
 
   try {
@@ -108,6 +117,7 @@ router.post('/chat', async (req, res) => {
       lang,
       provider,
       fallback: prefs.fallback,
+      history,
     });
     res.json({
       reply: result.text || (lang === 'en' ? 'AI is busy, try again.' : 'AI 暂时繁忙，请稍后再试。'),
